@@ -1,17 +1,15 @@
 //Author: Design-BAB
 //Date: 12/12/2025
 //Description: It is my happy garden game project. The goal is to reach 268 lines of code
-//Continue from the suggestions on pg164
+//Notes: Start off from suggestions in pg.165
 
 package main
 
 import (
+	"math/rand/v2"
 	"time"
 
-	"math/rand/v2"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
-	//"time"
 )
 
 type GameState struct {
@@ -26,7 +24,8 @@ type GameState struct {
 	TimeElapsed         int
 	StartTime           time.Time
 	//Go nor raylib has a scheduler func, so we need to calculate time ourselves
-	LastFlowerTime time.Time
+	LastFlowerTime   time.Time
+	LastWateringTime time.Time
 }
 
 // New thing I didnt know about Go before, all variables and bools are automaticly zero or false.
@@ -58,7 +57,7 @@ func newPlant(texture rl.Texture2D, x, y float32) *Plant {
 }
 
 // the book seems to want me to seperate what and when it happens. I decied to keep it in one.
-func addFlower(flowerList, wiltFlower []*Plant, flowerTexture rl.Texture2D, yourGame *GameState) []*Plant {
+func growFlowers(flowerList []*Plant, flowerTexture rl.Texture2D, yourGame *GameState) []*Plant {
 	if yourGame.IsOver == false {
 		if time.Since(yourGame.LastFlowerTime) >= 4*time.Second {
 			flowerNew := newPlant(flowerTexture, float32(rand.IntN(int(yourGame.Width-100))+50), float32(rand.IntN(int(yourGame.Height-250))+150))
@@ -78,10 +77,7 @@ func wiltFlower() {
 func checkFlowerCollision() {
 }
 
-func resetCow() {
-}
-
-func update(cow *Actor, yourGame *GameState) {
+func update(cow *Actor, flowerList, wiltFlower []*Plant, flowerTexture, cowTexture, cowWateringTexture rl.Texture2D, yourGame *GameState) []*Plant {
 	//the book lists some variables, but i'm gonna skip that here
 	if yourGame.IsOver == false {
 		if rl.IsKeyDown(rl.KeyRight) {
@@ -96,17 +92,39 @@ func update(cow *Actor, yourGame *GameState) {
 		if rl.IsKeyDown(rl.KeyDown) {
 			cow.Y = cow.Y + cow.Speed
 		}
+		if rl.IsKeyDown(rl.KeySpace) {
+			cow.Texture = cowWateringTexture
+			yourGame.LastWateringTime = time.Now()
+		}
+		//the book had this in reset_cow function, but i just did it here because why not
+		//the book suggest 500, did 350 because it looks better
+		if time.Since(yourGame.LastWateringTime) >= 350*time.Millisecond && cow.Texture == cowWateringTexture {
+			cow.Texture = cowTexture
+		}
 	}
+	flowerList = growFlowers(flowerList, flowerTexture, yourGame)
+	return flowerList
 
 }
 
-func draw(cow *Actor, background *rl.Texture2D, yourGame *GameState) {
+func draw(cow *Actor, background *rl.Texture2D, flowerList []*Plant, yourGame *GameState) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 	rl.DrawTexture(*background, 0, 0, rl.White)
 	//rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LightGray)
 	if yourGame.IsOver == false {
+		//The whole perspective thing is weird raw, so we need two loops to determine whether the flower should be infront or behind the cow
+		for _, flowerToDisplay := range flowerList {
+			if flowerToDisplay.Y < cow.Y+35 {
+				rl.DrawTexture(flowerToDisplay.Texture, int32(flowerToDisplay.X), int32(flowerToDisplay.Y), rl.White)
+			}
+		}
 		rl.DrawTexture(cow.Texture, int32(cow.X), int32(cow.Y), rl.White)
+		for _, flowerToDisplay := range flowerList {
+			if flowerToDisplay.Y >= cow.Y+35 {
+				rl.DrawTexture(flowerToDisplay.Texture, int32(flowerToDisplay.X), int32(flowerToDisplay.Y), rl.White)
+			}
+		}
 	}
 	rl.EndDrawing()
 }
@@ -124,6 +142,8 @@ func main() {
 	//time for actors
 	cowTexture := rl.LoadTexture("images/cow.png")
 	defer rl.UnloadTexture(cowTexture)
+	cowWateringTexture := rl.LoadTexture("images/cow-water.png")
+	defer rl.UnloadTexture(cowWateringTexture)
 	cow := newActor(cowTexture, 100, 500)
 	flowerTexture := rl.LoadTexture("images/flower.png")
 	defer rl.UnloadTexture(flowerTexture)
@@ -134,7 +154,7 @@ func main() {
 	//fangFlowerList := []*Actor{}
 	//this is the actual game loop
 	for !rl.WindowShouldClose() {
-		update(cow, yourGame)
-		draw(cow, &background, yourGame)
+		flowerList = update(cow, flowerList, wiltedList, flowerTexture, cowTexture, cowWateringTexture, yourGame)
+		draw(cow, &background, flowerList, yourGame)
 	}
 }
