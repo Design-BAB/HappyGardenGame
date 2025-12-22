@@ -1,7 +1,7 @@
 //Author: Design-BAB
 //Date: 12/16/2025
 //Description: It is my happy garden game project. The goal is to reach 268 lines of code
-//Notes: Continue on suggestions on pg 166
+//Notes: Try out the sugesstions from end of 168 to 169
 
 package main
 
@@ -52,12 +52,14 @@ type Plant struct {
 	//this is the collision box``
 	rl.Rectangle     // This gives Actor all the fields of rl.Rectangle (X, Y, Width, Height)
 	IsHappy          bool
+	IsEvil           bool
 	LastWateringTime time.Time
 }
 
 func newPlant(texture rl.Texture2D, x, y float32) *Plant {
 	startTimeNow := time.Now()
-	return &Plant{Texture: texture, Rectangle: rl.Rectangle{X: x, Y: y, Width: float32(texture.Width), Height: float32(texture.Height)}, IsHappy: true, LastWateringTime: startTimeNow}
+	//making the rectangle a little bit wider to make watering more accessable
+	return &Plant{Texture: texture, Rectangle: rl.Rectangle{X: x, Y: y, Width: float32(texture.Width) * 1.6, Height: float32(texture.Height)}, IsHappy: true, LastWateringTime: startTimeNow}
 }
 
 // the book seems to want me to seperate what and when it happens. I decied to keep it in one.
@@ -84,6 +86,22 @@ func wiltFlower(flowerList []*Plant, dry rl.Texture2D, yourGame *GameState) []*P
 		}
 	}
 	return flowerList
+}
+
+func mutate(flowerList []*Plant) {
+
+}
+
+// from pg.170
+func velocity() int {
+	//grabs a number between 0&1, represents direction
+	randomDir := rand.IntN(2)
+	randomVelocity := rand.IntN(2) + 2
+	if randomDir == 0 {
+		//turns it into negative
+		randomVelocity *= -1
+	}
+	return randomVelocity
 }
 
 func getInput(cow *Actor, flowerList []*Plant, theCowTexture, theFlowerTexture map[string]rl.Texture2D, yourGame *GameState) {
