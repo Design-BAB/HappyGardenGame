@@ -289,7 +289,7 @@ func main() {
 	//create a new game
 	yourGame := newGameState()
 	//creating window
-	rl.InitWindow(yourGame.Width, yourGame.Height, "raylib [core] example - basic window")
+	rl.InitWindow(yourGame.Width, yourGame.Height, "Happy Garden")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 	//this is just for background
