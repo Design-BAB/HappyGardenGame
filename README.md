@@ -1,9 +1,7 @@
 # 🌸 Happy Garden
 
-A small experimental game project built with [raylib-go](https://github.com/gen2brain/raylib-go) and Go.  
+A game project built with [raylib-go](https://github.com/gen2brain/raylib-go) and Go.  
 The goal: keep your garden happy by watering flowers before they wilt or mutate into evil fang-flowers!
-
----
 
 ## 🎮 Gameplay
 
@@ -20,7 +18,6 @@ The goal: keep your garden happy by watering flowers before they wilt or mutate 
   - Your garden stays unhappy for too long (10 seconds).
   - Or you reach the frame/time limit.
 
----
 
 ## ✨ Features
 
@@ -35,19 +32,7 @@ The goal: keep your garden happy by watering flowers before they wilt or mutate 
 - **Loss conditions**:  
   Multiple ways to lose keep the game tense and engaging.
 
----
-
 ## 🛠️ Tech Stack
 
 - **Language:** Go
 - **Graphics:** [raylib-go](https://github.com/gen2brain/raylib-go)
-- **Randomness & Timing:** `math/rand/v2`, `time`
-
----
-
-## 🚀 Getting Started
-
-1. Install Go (1.21+ recommended).
-2. Install raylib-go:
-   ```bash
-   go get github.com/gen2brain/raylib-go/raylib
