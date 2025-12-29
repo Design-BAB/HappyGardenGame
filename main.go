@@ -16,6 +16,8 @@ import (
 const (
 	MaxFlowers = 100    // fixed upper bound for flowers (Rule 2/3)
 	MaxFrames  = 432000 // bounded main loop frames (Rule 2)
+	SlopLeft   = 1.54
+	BLeft      = 413
 )
 
 type GameState struct {
@@ -181,16 +183,17 @@ func getInput(cow *Actor, flowerList []*Plant, theCowTexture, theFlowerTexture m
 	}
 }
 
+// this function doesn't really change the plant, it just deals with movement and collisions
 func updateFangFlower(flowerList []*Plant, yourGame *GameState) []*Plant {
 	for i := 0; i < len(flowerList); i++ {
 		if flowerList[i].IsEvil {
-			if flowerList[i].X <= 0 || flowerList[i].X >= float32(yourGame.Width)-flowerList[i].Width {
+			if 0 >= getBounds(flowerList[i]) || flowerList[i].X >= float32(yourGame.Width)-flowerList[i].Width {
 				flowerList[i].Vx *= -1 // Reverse horizontal direction\
 				flowerList[i].X = flowerList[i].X + flowerList[i].Vx
 			} else {
 				flowerList[i].X = flowerList[i].X + flowerList[i].Vx
 			}
-			if flowerList[i].Y <= 0 || flowerList[i].Y >= float32(yourGame.Height-250)+150 {
+			if 0 >= getBounds(flowerList[i]) || flowerList[i].Y < 250 || flowerList[i].Y > float32(yourGame.Height-100) {
 				flowerList[i].Vy *= -1 // Reverse vertical direction
 				flowerList[i].Y = flowerList[i].Y + flowerList[i].Vy
 			} else {
@@ -199,6 +202,14 @@ func updateFangFlower(flowerList []*Plant, yourGame *GameState) []*Plant {
 		}
 	}
 	return flowerList
+}
+func getBounds(flower *Plant) float32 {
+	//value=232x+120y−49560
+	//if positive it is good
+	where := flower.X * 232
+	howHigh := flower.Y * 120
+	where = where + howHigh - 49560
+	return where
 }
 
 func update(cow *Actor, flowerList []*Plant, theCowTexture, theFlowerTexture map[string]rl.Texture2D, yourGame *GameState) []*Plant {
