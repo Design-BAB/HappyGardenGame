@@ -183,32 +183,51 @@ func getInput(cow *Actor, flowerList []*Plant, theCowTexture, theFlowerTexture m
 	}
 }
 
-// this function doesn't really change the plant, it just deals with movement and collisions
+// This function handles movement and boundary collisions for evil plants
 func updateFangFlower(flowerList []*Plant, yourGame *GameState) []*Plant {
-	for i := 0; i < len(flowerList); i++ {
-		if flowerList[i].IsEvil {
-			if 0 >= getBounds(flowerList[i]) || flowerList[i].X >= float32(yourGame.Width)-flowerList[i].Width {
-				flowerList[i].Vx *= -1 // Reverse horizontal direction\
-				flowerList[i].X = flowerList[i].X + flowerList[i].Vx
-			} else {
-				flowerList[i].X = flowerList[i].X + flowerList[i].Vx
-			}
-			if 0 >= getBounds(flowerList[i]) || flowerList[i].Y < 250 || flowerList[i].Y > float32(yourGame.Height-100) {
-				flowerList[i].Vy *= -1 // Reverse vertical direction
-				flowerList[i].Y = flowerList[i].Y + flowerList[i].Vy
-			} else {
-				flowerList[i].Y = flowerList[i].Y + flowerList[i].Vy
-			}
+	for _, flower := range flowerList {
+		if !flower.IsEvil {
+			continue
 		}
+
+		// Line boundary checks
+		// Positive = allowed side, <= 0 = crossed boundary
+		hitLeftLine := getBounds(flower) <= 10
+		hitRightLine := getBoundsRightSide(flower) <= 10
+
+		// Reverse horizontal direction if hitting either line
+		if hitLeftLine || hitRightLine {
+			flower.Vx *= -1
+			flower.X += flower.Vx
+		}
+
+		// Vertical screen bounds
+		if flower.Y < 150 || flower.Y > float32(yourGame.Height) {
+			flower.Vy *= -1
+		}
+
+		// Apply movement ONCE per frame
+		flower.X += flower.Vx
+		flower.Y += flower.Vy
 	}
 	return flowerList
 }
+
 func getBounds(flower *Plant) float32 {
 	//value=232x+120y−49560
 	//if positive it is good
 	where := flower.X * 232
 	howHigh := flower.Y * 120
 	where = where + howHigh - 49560
+	return where
+}
+
+func getBoundsRightSide(flower *Plant) float32 {
+	//value=-238x + 115y + 142,330
+	//if positive it is good
+	where := flower.X * -238
+	howHigh := flower.Y * 115
+	where = where + howHigh + 142330
 	return where
 }
 
